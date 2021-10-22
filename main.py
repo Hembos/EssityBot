@@ -12,6 +12,4 @@ dp = Dispatcher(bot=bot)
 async def send_welcome(msg: types.Message):
     await msg.answer(text=f"Привет, {msg.from_user.username}")
 
-
-if __name__ == '__main__':
-    executor.start_polling(dp)
+executor.start_polling(dp)
