@@ -8,8 +8,8 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher(bot=bot)
 
 
-@dp.message_handler(commands=['start', 'help'])
+@dp.message_handler(content_types=['text'])
 async def send_welcome(msg: types.Message):
-    await msg.answer(text=f"Привет, {msg.from_user.username}")
+    await msg.answer(text=msg.text)
 
 executor.start_polling(dp)
