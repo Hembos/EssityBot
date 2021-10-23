@@ -1,15 +1,18 @@
-from aiogram import Bot, types
-from aiogram.dispatcher import Dispatcher
-from aiogram.utils import executor
+from aiogram import executor
 
-from config import TOKEN
+from loader import dp
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher(bot=bot)
+from utils.admin.notify_admins import on_startup_notify
+from utils.commands.default_commands import set_default_commands
 
 
-@dp.message_handler(content_types=['text'])
-async def send_welcome(msg: types.Message):
-    await msg.answer(text=msg.text)
+async def on_startup(dispatcher):
+    # Устанавливает дефолтные команды
+    await on_startup_notify(dispatcher)
 
-executor.start_polling(dp)
+    # Уведомляет про запуск
+    await set_default_commands(dispatcher)
+
+
+if __name__ == '__main__':
+    executor.start_polling(dp, on_startup=on_startup)
