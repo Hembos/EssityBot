@@ -5,3 +5,4 @@ load_dotenv()
 
 TOKEN = environ.get(key="TOKEN")
 ADMIN_ID = environ.get(key="ADMIN_ID")
+DATABASE_URL = environ.get(key="DATABASE_URL")
