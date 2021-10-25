@@ -26,3 +26,16 @@ class DataBase:
         self.__connection.close()
 
         logging.info("Database connection closed")
+
+    def __check_user_existing(self, user_id):
+        """Check user existing"""
+        self.__cursor.execute('SELECT * FROM users WHERE user_id=(%s)', (user_id,))
+        res = self.__cursor.fetchall()
+        return bool(len(res))
+
+    def add_new_user(self, user_id):
+        """Add new user in database if he not existing"""
+        with self.__connection:
+            if not self.__check_user_existing(user_id=user_id):
+                self.__cursor.execute('INSERT INTO users (user_id) VALUES(%s);', (user_id,))
+                self.__connection.commit()
