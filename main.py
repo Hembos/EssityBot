@@ -5,6 +5,8 @@ from loader import dp
 from utils.admin.notify_admins import on_startup_notify
 from utils.commands.default_commands import set_default_commands
 
+from handlers import default_commands
+
 
 async def on_startup(dispatcher):
     # Устанавливает дефолтные команды
