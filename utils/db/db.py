@@ -29,7 +29,7 @@ class DataBase:
 
     def __check_user_existing(self, user_id):
         """Check user existing"""
-        self.__cursor.execute('SELECT * FROM users WHERE user_id=(%s)', (user_id,))
+        self.__cursor.execute('SELECT * FROM users WHERE user_id=(%s);', (user_id,))
         res = self.__cursor.fetchall()
         return bool(len(res))
 
