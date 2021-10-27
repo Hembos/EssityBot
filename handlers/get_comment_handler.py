@@ -7,6 +7,8 @@ from keyboards.default.comment import comment_mode_but
 
 from states.comment_states import CommentStates
 
+from utils.email import email_sender
+
 
 @dp.message_handler(Command('comment'), state=None)
 async def start_user_comment(message: Message):
@@ -43,9 +45,7 @@ async def get_comment_state(message: Message, state: FSMContext):
     """Get only comment without photo"""
     db.add_comment_from_user(message.from_user.id, message.text)
 
-    # TODO: Email sender
-
-    await message.reply("Спасибо")
+    email_sender.send_mail(message=message.text)
 
     await state.finish()
 
@@ -55,18 +55,17 @@ async def comment_with_barcode_state(message: Message):
     """Get comment and set state get barcode"""
     db.add_comment_from_user(message.from_user.id, message.text)
 
-    # TODO: Email sender
+    email_sender.send_mail(message=message.text)
 
     await CommentStates.GET_BARCODE_STATE.set()
-    await message.reply("Отправьте фото")
+    await message.reply("Отправьте фото. Или если вы передумали напишите /cancel")
 
 
 @dp.message_handler(state=CommentStates.GET_BARCODE_STATE)
 async def get_barcode_state(message: Message, state: FSMContext):
     """Get barcode"""
-    # TODO: Узнать что хранится в штрихкоде и добавитьт новые столбцы в таблицу
+    # TODO: Узнать что хранится в штрихкоде и добавить новые столбцы в таблицу
     # TODO: Barcode checker and parser
-
-    await message.reply("Спасибо")
+    # TODO: Сделать запрос фото пока оно не станет читабельным либо пока пользователю не надоест
 
     await state.finish()
