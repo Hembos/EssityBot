@@ -39,3 +39,9 @@ class DataBase:
             if not self.__check_user_existing(user_id=user_id):
                 self.__cursor.execute('INSERT INTO users (user_id) VALUES(%s);', (user_id,))
                 self.__connection.commit()
+
+    def add_comment_from_user(self, user_id, comment):
+        """Add new comment from user"""
+        with self.__connection:
+            self.__cursor.execute('INSERT INTO comments (comment, user_id) VALUES(%s, %s);', (comment, user_id,))
+            self.__connection.commit()
