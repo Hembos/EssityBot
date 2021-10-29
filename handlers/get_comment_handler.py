@@ -1,12 +1,12 @@
-from loader import dp, db
+from PIL import Image
+from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import Message
-from aiogram.dispatcher import FSMContext
 
 from keyboards.default.comment import comment_mode_but
-
+from loader import dp, db, bot
 from states.comment_states import CommentStates
-
+from utils.barcode.barcode_reader import decode
 from utils.email import email_sender
 
 
@@ -46,26 +46,41 @@ async def get_comment_state(message: Message, state: FSMContext):
     db.add_comment_from_user(message.from_user.id, message.text)
 
     email_sender.send_mail(message=message.text)
+    await message.reply("Отлично! Замечание успешно добавлено. Спасибо, что не остались равнодушным.")
 
     await state.finish()
 
 
 @dp.message_handler(state=CommentStates.WITH_BARCODE_STATE)
-async def comment_with_barcode_state(message: Message):
+async def comment_with_barcode_state(message: Message, state: FSMContext):
     """Get comment and set state get barcode"""
-    db.add_comment_from_user(message.from_user.id, message.text)
-
-    email_sender.send_mail(message=message.text)
-
+    await state.update_data(message_text=message.text)
     await CommentStates.GET_BARCODE_STATE.set()
     await message.reply("Отправьте фото. Или если вы передумали напишите /cancel")
 
 
-@dp.message_handler(state=CommentStates.GET_BARCODE_STATE)
+@dp.message_handler(content_types=['photo'], state=CommentStates.GET_BARCODE_STATE)
 async def get_barcode_state(message: Message, state: FSMContext):
     """Get barcode"""
-    # TODO: Узнать что хранится в штрихкоде и добавить новые столбцы в таблицу
-    # TODO: Barcode checker and parser
-    # TODO: Сделать запрос фото пока оно не станет читабельным либо пока пользователю не надоест
+    file_info = await bot.get_file(message.photo[-1].file_id)
+    d = await bot.download_file(file_info.file_path)
+    image = Image.open(d).convert("RGBA")
+    barcode = decode(image)
+    if barcode is None:
+        await message.reply("Некорректный штрихкод. Поробуйте отправить фото еще раз"
+                            " или введите /cancel")
+        CommentStates.GET_BARCODE_STATE.set()
+    else:
+        barcode_text = db.get_barcode_text(barcode.decode('utf-8'))
+        data = await state.get_data()
+        message_text = data.get("message_text")
 
-    await state.finish()
+        if len(barcode_text) == 0:
+            await message.reply("Некорректный штрихкод. Видимо это не наша проудкция. Поробуйте отправить фото еще раз"
+                                " или введите /cancel")
+            CommentStates.GET_BARCODE_STATE.set()
+        else:
+            email_sender.send_mail(message=(barcode_text[0] + ':\n' + message_text))
+            db.add_comment_from_user(message.from_user.id, message_text)
+            await message.reply("Отлично! Замечание успешно добавлено. Спасибо, что не остались равнодушным.")
+            await state.finish()

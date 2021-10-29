@@ -2,6 +2,7 @@ import logging
 
 from psycopg2 import connect
 
+from config import DATABASE_URL
 
 class DataBase:
     def __init__(self, database_url):
@@ -45,3 +46,10 @@ class DataBase:
         with self.__connection:
             self.__cursor.execute('INSERT INTO comments (comment, user_id) VALUES(%s, %s);', (comment, user_id,))
             self.__connection.commit()
+
+    def get_barcode_text(self, barcode):
+        """Return barcode text if barcode exist else return none"""
+        with self.__connection:
+            self.__cursor.execute("SELECT text FROM barcodes WHERE barcode=%s;", (barcode,))
+            barcode_text = self.__cursor.fetchone()
+            return barcode_text

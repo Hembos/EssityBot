@@ -13,6 +13,7 @@ def send_mail(message):
     msg = MIMEMultipart()
     msg['From'] = BOT_EMAIL
     msg['Subject'] = 'Замечание'
+    msg['To'] = ""
     msg.attach(MIMEText(message, 'plain'))
     server = SMTP('smtp.yandex.ru', 587)
 
@@ -21,7 +22,7 @@ def send_mail(message):
     server.login(bot_email, bot_email_password)
 
     for email in VIEWERS_EMAILS:
-        msg['To'] = email
+        msg.replace_header('To', email)
         server.send_message(msg)
 
     server.quit()
