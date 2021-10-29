@@ -3,7 +3,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.types import Message, ReplyKeyboardRemove
 
 what_bot_can_do = """
-Я умею принимать ваши замечания.
+Я умею принимать ваши замечания. Для этого введите команду /comment
 """
 
 
